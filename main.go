@@ -27,7 +27,9 @@ type LogMessage struct {
 	ObjectName string
 	EventType string
 	AssignedNode string
+	OldAssignedNode string
 	Replicas int32
+	OldReplicas int32
 	Timestamp time.Time `json:"time"`
 }
 
@@ -59,13 +61,13 @@ func createWatcher(c cache.Getter, obj runtime.Object, resource string) cache.Co
 		resyncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				toJson(obj, "Created")
+				toJson(nil, obj, "Created")
 			},
 			DeleteFunc: func(obj interface{}) {
-				toJson(obj, "Deleted")
+				toJson(nil, obj, "Deleted")
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				toJson(newObj, "Updated")
+				toJson(oldObj, newObj, "Updated")
 			},
 		},
 	)
@@ -74,7 +76,7 @@ func createWatcher(c cache.Getter, obj runtime.Object, resource string) cache.Co
 	return controller
 }
 
-func toJson(obj interface{}, eventType string) string {
+func toJson(oldObj interface{}, obj interface{}, eventType string) string {
 	objType := reflect.TypeOf(obj)
 
 	logMessage := &LogMessage{ObjectType: strings.TrimLeft(objType.String(), "*"), ObjectName: getName(obj), EventType: eventType, Timestamp: time.Now().UTC()}
@@ -87,6 +89,18 @@ func toJson(obj interface{}, eventType string) string {
 		logMessage.Replicas = *t.Spec.Replicas
 	case *v1beta1.ReplicaSet:
 		logMessage.Replicas = *t.Spec.Replicas
+	}
+
+	//If this is an update add some information related to the old object
+	if oldObj != nil {
+		switch t := oldObj.(type) {
+		case *v1.Pod:
+			logMessage.OldAssignedNode = t.Spec.NodeName
+		case *v1beta1.Deployment:
+			logMessage.OldReplicas = *t.Spec.Replicas
+		case *v1beta1.ReplicaSet:
+			logMessage.OldReplicas = *t.Spec.Replicas
+		}
 	}
 
 	b, err := json.Marshal(logMessage)
