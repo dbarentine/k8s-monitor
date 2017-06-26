@@ -26,9 +26,9 @@ type LogMessage struct {
 	ObjectType string
 	ObjectName string
 	EventType string
-	AssignedNode string
-	Replicas int32
-	Timestamp time.Time
+	AssignedNode string `json:"omitempty"`
+	Replicas int32 `json:"omitempty"`
+	Timestamp time.Time `json:"time"`
 }
 
 func main() {
@@ -77,7 +77,7 @@ func createWatcher(c cache.Getter, obj runtime.Object, resource string) cache.Co
 func toJson(obj interface{}, eventType string) string {
 	objType := reflect.TypeOf(obj)
 
-	logMessage := &LogMessage{ObjectType: strings.TrimLeft(objType.String(), "*"), ObjectName: getName(obj), EventType: eventType, Timestamp: time.Now()}
+	logMessage := &LogMessage{ObjectType: strings.TrimLeft(objType.String(), "*"), ObjectName: getName(obj), EventType: eventType, Timestamp: time.Now().UTC()}
 
 	//Add additional information to log message
 	switch t := obj.(type) {
