@@ -26,8 +26,8 @@ type LogMessage struct {
 	ObjectType string
 	ObjectName string
 	EventType string
-	AssignedNode string `json:"omitempty"`
-	Replicas int32 `json:"omitempty"`
+	AssignedNode string
+	Replicas int32
 	Timestamp time.Time `json:"time"`
 }
 
