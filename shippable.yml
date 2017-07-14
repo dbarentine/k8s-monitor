@@ -6,10 +6,10 @@ go:
 install:
    - go get -u github.com/golang/dep/cmd/dep
    - go install github.com/golang/dep/cmd/dep
-   - dep ensure
 
 build:
   ci:
+    - dep ensure
     - export GOPATH=$PWD
     - export PATH=$PATH:$GOPATH/bin
     - export GOOS=linux
