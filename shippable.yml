@@ -4,14 +4,16 @@ go:
    - 1.8
 
 install:
+   - echo $PWD
+   - ls -la
    - go get -u github.com/golang/dep/cmd/dep
    - go install github.com/golang/dep/cmd/dep
+    - dep ensure -v
 
 build:
   ci:
-    - dep ensure
-    - export GOPATH=$PWD
-    - export PATH=$PATH:$GOPATH/bin
+    - echo $PWD
+    - ls -la
     - export GOOS=linux
     - export GOARCH=amd64
     - go build -v -i -o docker/bin/k8s-monitor
