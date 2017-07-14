@@ -1,0 +1,28 @@
+language: go
+
+go:
+   - 1.8
+
+install:
+   - go get -v
+
+build:
+  ci:
+    - export GOPATH=$PWD
+    - export PATH=$PATH:$GOPATH/bin
+    - export GOOS=linux
+    - export GOARCH=amd64
+    - go build -v -i -o docker/bin/k8s-monitor
+    - cd docker
+    - docker build -t danebarentine/k8s-monitor .
+  post_ci:
+    - docker commit $SHIPPABLE_CONTAINER_NAME danebarentine/k8s-monitor
+    - docker push danebarentine/k8s-monitor
+
+integrations:
+    hub:
+      - integrationName: docker-hub
+        type: docker
+        branches:
+          only:
+            - master
